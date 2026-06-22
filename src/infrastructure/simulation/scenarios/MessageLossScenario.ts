@@ -3,11 +3,14 @@ import { MqttClient } from '../../mqtt/MqttClient.js';
 import { MqttTopics } from '../../mqtt/MqttTopics.js';
 import { DeviceStateMachine } from '../DeviceStateMachine.js';
 import { IAccessLogger } from '../../../domain/interfaces/IAccessLogger.js';
+import {
+  SIMULATION_VENUE_ID,
+  SIMULATION_DEVICE_ID,
+  SIMULATION_EXHIBITION_ID,
+  SIMULATION_METADATA,
+} from '../constants.js';
 import { v4 as uuidv4 } from 'uuid';
 
-const VENUE_ID = 'venue-grand-palais';
-const DEVICE_ID = 'GATE-EXPO-A1-001';
-const EXHIBITION_ID = 'expo-cartier-bresson-2026';
 const MAX_RETRIES = 3;
 const RETRY_DELAY_MS = 600;
 const RECONNECT_DELAY_MS = 1000;
@@ -28,11 +31,11 @@ export async function runMessageLossScenario(
   stateMachine.forceReset();
   stateMachine.onConnectionLost();
 
-  await mqttClient.publish(MqttTopics.deviceStatus(DEVICE_ID), {
+  await mqttClient.publish(MqttTopics.deviceStatus(SIMULATION_DEVICE_ID), {
     messageId: uuidv4(),
-    deviceId: DEVICE_ID,
-    venueId: VENUE_ID,
-    exhibitionId: EXHIBITION_ID,
+    deviceId: SIMULATION_DEVICE_ID,
+    venueId: SIMULATION_VENUE_ID,
+    exhibitionId: SIMULATION_EXHIBITION_ID,
     timestamp: new Date().toISOString(),
     eventType: 'ERROR',
     ticketId: null,
@@ -41,12 +44,7 @@ export async function runMessageLossScenario(
     maxCapacity,
     occupancyRate: currentOccupancy / maxCapacity,
     state: 'OFFLINE',
-    metadata: {
-      firmwareVersion: '1.4.2',
-      batteryLevel: 0.87,
-      signalStrength: -80,
-      retryCount: 0,
-    },
+    metadata: { ...SIMULATION_METADATA, signalStrength: -80, retryCount: 0 },
   });
   messagesPublished++;
 
@@ -69,11 +67,11 @@ export async function runMessageLossScenario(
 
   stateMachine.onReconnected();
 
-  await mqttClient.publish(MqttTopics.deviceStatus(DEVICE_ID), {
+  await mqttClient.publish(MqttTopics.deviceStatus(SIMULATION_DEVICE_ID), {
     messageId: uuidv4(),
-    deviceId: DEVICE_ID,
-    venueId: VENUE_ID,
-    exhibitionId: EXHIBITION_ID,
+    deviceId: SIMULATION_DEVICE_ID,
+    venueId: SIMULATION_VENUE_ID,
+    exhibitionId: SIMULATION_EXHIBITION_ID,
     timestamp: new Date().toISOString(),
     eventType: 'ERROR',
     ticketId: null,
@@ -82,12 +80,7 @@ export async function runMessageLossScenario(
     maxCapacity,
     occupancyRate: currentOccupancy / maxCapacity,
     state: 'IDLE',
-    metadata: {
-      firmwareVersion: '1.4.2',
-      batteryLevel: 0.87,
-      signalStrength: -65,
-      retryCount: MAX_RETRIES,
-    },
+    metadata: { ...SIMULATION_METADATA, retryCount: MAX_RETRIES },
   });
   messagesPublished++;
 
@@ -96,11 +89,11 @@ export async function runMessageLossScenario(
   });
 
   for (const pendingMessage of pendingMessages) {
-    await mqttClient.publish(MqttTopics.venueAccess(VENUE_ID), {
+    await mqttClient.publish(MqttTopics.venueAccess(SIMULATION_VENUE_ID), {
       ...pendingMessage,
-      deviceId: DEVICE_ID,
-      venueId: VENUE_ID,
-      exhibitionId: EXHIBITION_ID,
+      deviceId: SIMULATION_DEVICE_ID,
+      venueId: SIMULATION_VENUE_ID,
+      exhibitionId: SIMULATION_EXHIBITION_ID,
       republishedAt: new Date().toISOString(),
       state: 'IDLE',
     });

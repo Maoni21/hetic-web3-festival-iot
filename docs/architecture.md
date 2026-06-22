@@ -24,6 +24,8 @@ Le projet applique strictement les principes de la Clean Architecture. Les couch
 Le cœur du système. **Zéro dépendance externe** — pas de framework, pas d'I/O.
 
 - **Entities** : `Visitor`, `Ticket`, `Venue`, `AccessEvent` — objets métier avec identité et comportements
+
+> **Note sur `Visitor`** : l'entité `Visitor` est définie dans le domaine mais n'est pas encore exploitée dans les use cases actuels. Elle représente la capacité future du système à associer une entrée physique à un profil visiteur (historique des visites, abonnements, accessibilité). Dans la version actuelle de simulation, le flux complet entrée→sortie est tracé via `AccessEvent` et `Ticket` ; `Visitor` est prête à être branché dès que le périmètre s'étend à la gestion de visiteurs nommés.
 - **Value Objects** : `TicketId`, `VenueId`, `DeviceId`, `Timestamp` — objets immuables sans identité
 - **Enums** : `AccessEventType`, `TicketStatus`, `DeviceState`
 - **Interfaces (Ports)** : `ITicketRepository`, `IVenueRepository`, `IEventPublisher`, `ISensorSimulator`, `IAccessLogger` — contrats que l'infrastructure doit implémenter

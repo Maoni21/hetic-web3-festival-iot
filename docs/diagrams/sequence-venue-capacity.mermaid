@@ -1,0 +1,27 @@
+sequenceDiagram
+  participant S as Capteur IoT
+  participant CV as CheckVenueCapacityUseCase
+  participant VR as VenueRepository
+  participant MP as MqttEventPublisher
+  participant D as Dashboard
+
+  Note over VR: currentOccupancy = 475 (95%)
+  MP->>D: publish(CAPACITY_WARNING, occupancyRate=0.95) → /capacity
+  D->>D: updateOccupancy(475, 500) — barre orange
+
+  Note over VR: currentOccupancy = 500 (100%)
+  MP->>D: publish(CAPACITY_EXCEEDED, occupancyRate=1.0) → /capacity
+  D->>D: updateOccupancy(500, 500) — barre rouge
+
+  S->>S: onTicketDetected() → READING
+  S->>S: onReadSuccess() → PROCESSING
+  S->>CV: execute("venue-grand-palais")
+  CV->>VR: findById(venueId)
+  VR-->>CV: Venue { occupancy: 500/500 }
+  CV-->>S: { hasCapacity: false, error: VenueAtCapacityError }
+  S->>MP: publish(DENIED, reason=VENUE_FULL) → /access
+  MP->>D: broadcast via WebSocket
+  D->>D: appendEvent(DENIED, TKT-2026-VALID-099 (VALID))
+  S->>S: onAccessDenied() → DENIED
+  Note over S: 3 secondes
+  S->>S: onReset() → IDLE

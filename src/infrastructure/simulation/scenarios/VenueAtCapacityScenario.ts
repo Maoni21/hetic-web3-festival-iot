@@ -3,11 +3,14 @@ import { MqttClient } from '../../mqtt/MqttClient.js';
 import { MqttTopics } from '../../mqtt/MqttTopics.js';
 import { DeviceStateMachine } from '../DeviceStateMachine.js';
 import { IAccessLogger } from '../../../domain/interfaces/IAccessLogger.js';
+import {
+  SIMULATION_VENUE_ID,
+  SIMULATION_DEVICE_ID,
+  SIMULATION_EXHIBITION_ID,
+  SIMULATION_METADATA,
+} from '../constants.js';
 import { v4 as uuidv4 } from 'uuid';
 
-const VENUE_ID = 'venue-grand-palais';
-const DEVICE_ID = 'GATE-EXPO-A1-001';
-const EXHIBITION_ID = 'expo-cartier-bresson-2026';
 const MAX_CAPACITY = 500;
 const WARNING_OCCUPANCY = Math.floor(MAX_CAPACITY * 0.95);
 const STEP_DELAY_MS = 400;
@@ -24,11 +27,11 @@ export async function runVenueAtCapacityScenario(
   logger.info(scenarioName, 'Starting venue capacity scenario');
   stateMachine.forceReset();
 
-  await mqttClient.publish(MqttTopics.venueCapacity(VENUE_ID), {
+  await mqttClient.publish(MqttTopics.venueCapacity(SIMULATION_VENUE_ID), {
     messageId: uuidv4(),
-    deviceId: DEVICE_ID,
-    venueId: VENUE_ID,
-    exhibitionId: EXHIBITION_ID,
+    deviceId: SIMULATION_DEVICE_ID,
+    venueId: SIMULATION_VENUE_ID,
+    exhibitionId: SIMULATION_EXHIBITION_ID,
     timestamp: new Date().toISOString(),
     eventType: 'CAPACITY_WARNING',
     ticketId: null,
@@ -37,26 +40,18 @@ export async function runVenueAtCapacityScenario(
     maxCapacity: MAX_CAPACITY,
     occupancyRate: WARNING_OCCUPANCY / MAX_CAPACITY,
     state: 'IDLE',
-    metadata: {
-      firmwareVersion: '1.4.2',
-      batteryLevel: 0.87,
-      signalStrength: -65,
-      retryCount: 0,
-    },
+    metadata: { ...SIMULATION_METADATA, retryCount: 0 },
   });
   messagesPublished++;
-
-  logger.warn(scenarioName, 'CAPACITY_WARNING published', {
-    occupancyRate: WARNING_OCCUPANCY / MAX_CAPACITY,
-  });
+  logger.warn(scenarioName, 'CAPACITY_WARNING published', { occupancyRate: WARNING_OCCUPANCY / MAX_CAPACITY });
 
   await delay(STEP_DELAY_MS);
 
-  await mqttClient.publish(MqttTopics.venueCapacity(VENUE_ID), {
+  await mqttClient.publish(MqttTopics.venueCapacity(SIMULATION_VENUE_ID), {
     messageId: uuidv4(),
-    deviceId: DEVICE_ID,
-    venueId: VENUE_ID,
-    exhibitionId: EXHIBITION_ID,
+    deviceId: SIMULATION_DEVICE_ID,
+    venueId: SIMULATION_VENUE_ID,
+    exhibitionId: SIMULATION_EXHIBITION_ID,
     timestamp: new Date().toISOString(),
     eventType: 'CAPACITY_EXCEEDED',
     ticketId: null,
@@ -65,15 +60,9 @@ export async function runVenueAtCapacityScenario(
     maxCapacity: MAX_CAPACITY,
     occupancyRate: 1.0,
     state: 'IDLE',
-    metadata: {
-      firmwareVersion: '1.4.2',
-      batteryLevel: 0.87,
-      signalStrength: -65,
-      retryCount: 0,
-    },
+    metadata: { ...SIMULATION_METADATA, retryCount: 0 },
   });
   messagesPublished++;
-
   logger.warn(scenarioName, 'CAPACITY_EXCEEDED published', { occupancyRate: 1.0 });
 
   await delay(STEP_DELAY_MS);
@@ -83,11 +72,11 @@ export async function runVenueAtCapacityScenario(
   stateMachine.onReadSuccess();
   await delay(STEP_DELAY_MS);
 
-  await mqttClient.publish(MqttTopics.venueAccess(VENUE_ID), {
+  await mqttClient.publish(MqttTopics.venueAccess(SIMULATION_VENUE_ID), {
     messageId: uuidv4(),
-    deviceId: DEVICE_ID,
-    venueId: VENUE_ID,
-    exhibitionId: EXHIBITION_ID,
+    deviceId: SIMULATION_DEVICE_ID,
+    venueId: SIMULATION_VENUE_ID,
+    exhibitionId: SIMULATION_EXHIBITION_ID,
     timestamp: new Date().toISOString(),
     eventType: 'DENIED',
     ticketId: 'TKT-2026-VALID-099',
@@ -96,12 +85,7 @@ export async function runVenueAtCapacityScenario(
     maxCapacity: MAX_CAPACITY,
     occupancyRate: 1.0,
     state: 'DENIED',
-    metadata: {
-      firmwareVersion: '1.4.2',
-      batteryLevel: 0.87,
-      signalStrength: -65,
-      retryCount: 0,
-    },
+    metadata: { ...SIMULATION_METADATA, retryCount: 0 },
   });
   messagesPublished++;
 

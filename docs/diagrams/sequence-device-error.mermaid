@@ -1,0 +1,20 @@
+sequenceDiagram
+  participant S as Capteur IoT
+  participant SM as DeviceStateMachine
+  participant MP as MqttEventPublisher
+  participant D as Dashboard
+
+  S->>SM: onTicketDetected() → READING
+  loop 3 tentatives
+    S->>S: Lecture QR/RFID — échec
+    S->>S: retryCount++
+  end
+  S->>SM: onReadFailure() → ERROR
+  S->>MP: publish(ERROR, retryCount=3) → festival/device/{id}/error
+  MP->>D: broadcast via WebSocket
+  D->>D: updateDeviceState(ERROR)
+  Note over S,SM: 5 secondes d'attente
+  S->>SM: onRecovery() → IDLE
+  S->>MP: publish(ERROR, state=IDLE) → festival/device/{id}/status
+  MP->>D: broadcast via WebSocket
+  D->>D: updateDeviceState(IDLE)

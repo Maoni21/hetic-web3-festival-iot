@@ -3,11 +3,14 @@ import { MqttClient } from '../../mqtt/MqttClient.js';
 import { MqttTopics } from '../../mqtt/MqttTopics.js';
 import { DeviceStateMachine } from '../DeviceStateMachine.js';
 import { IAccessLogger } from '../../../domain/interfaces/IAccessLogger.js';
+import {
+  SIMULATION_VENUE_ID,
+  SIMULATION_DEVICE_ID,
+  SIMULATION_EXHIBITION_ID,
+  SIMULATION_METADATA,
+} from '../constants.js';
 import { v4 as uuidv4 } from 'uuid';
 
-const VENUE_ID = 'venue-grand-palais';
-const DEVICE_ID = 'GATE-EXPO-A1-001';
-const EXHIBITION_ID = 'expo-cartier-bresson-2026';
 const TICKET_ID = 'TKT-2026-FAKE-999';
 const PROCESSING_DELAY_MS = 500;
 
@@ -31,11 +34,11 @@ export async function runInvalidTicketScenario(
   stateMachine.onReadSuccess();
   await delay(PROCESSING_DELAY_MS);
 
-  await mqttClient.publish(MqttTopics.venueAccess(VENUE_ID), {
+  await mqttClient.publish(MqttTopics.venueAccess(SIMULATION_VENUE_ID), {
     messageId: uuidv4(),
-    deviceId: DEVICE_ID,
-    venueId: VENUE_ID,
-    exhibitionId: EXHIBITION_ID,
+    deviceId: SIMULATION_DEVICE_ID,
+    venueId: SIMULATION_VENUE_ID,
+    exhibitionId: SIMULATION_EXHIBITION_ID,
     timestamp: new Date().toISOString(),
     eventType: 'DENIED',
     ticketId: TICKET_ID,
@@ -44,12 +47,7 @@ export async function runInvalidTicketScenario(
     maxCapacity,
     occupancyRate: currentOccupancy / maxCapacity,
     state: 'DENIED',
-    metadata: {
-      firmwareVersion: '1.4.2',
-      batteryLevel: 0.87,
-      signalStrength: -65,
-      retryCount: 0,
-    },
+    metadata: { ...SIMULATION_METADATA, retryCount: 0 },
   });
   messagesPublished++;
 

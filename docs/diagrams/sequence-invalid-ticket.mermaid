@@ -1,0 +1,21 @@
+sequenceDiagram
+  participant V as Visiteur
+  participant S as Capteur IoT
+  participant UC as ValidateTicketUseCase
+  participant TR as TicketRepository
+  participant MP as MqttEventPublisher
+  participant D as Dashboard
+
+  V->>S: Présente billet TKT-2026-FAKE-999
+  S->>S: onTicketDetected() → READING
+  S->>UC: execute("TKT-2026-FAKE-999")
+  UC->>TR: findById(ticketId)
+  TR-->>UC: null (ticket inexistant)
+  UC-->>S: { isValid: false, reason: INVALID }
+  S->>S: onReadSuccess() → PROCESSING
+  S->>MP: publish(AccessEvent DENIED, ticketStatus=INVALID)
+  MP->>D: broadcast via WebSocket
+  D->>D: appendEvent(DENIED, TKT-2026-FAKE-999)
+  S->>S: onAccessDenied() → DENIED
+  Note over S: 3 secondes
+  S->>S: onReset() → IDLE

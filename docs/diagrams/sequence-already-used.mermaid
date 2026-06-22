@@ -1,0 +1,22 @@
+sequenceDiagram
+  participant V as Visiteur
+  participant S as Capteur IoT
+  participant UC as ValidateTicketUseCase
+  participant TR as TicketRepository
+  participant MP as MqttEventPublisher
+  participant D as Dashboard
+
+  V->>S: Présente billet TKT-2026-USED-042
+  S->>S: onTicketDetected() → READING
+  S->>UC: execute("TKT-2026-USED-042")
+  UC->>TR: findById(ticketId)
+  TR-->>UC: Ticket { status: USED, usedAt: 2026-07-04T10:00:00Z }
+  UC->>UC: ticket.isAlreadyUsed() → true
+  UC-->>S: { isValid: false, reason: USED, error: TicketAlreadyUsedError }
+  S->>S: onReadSuccess() → PROCESSING
+  S->>MP: publish(AccessEvent DENIED, ticketStatus=USED)
+  MP->>D: broadcast via WebSocket
+  D->>D: appendEvent(DENIED, TKT-2026-USED-042 (USED))
+  S->>S: onAccessDenied() → DENIED
+  Note over S: 3 secondes
+  S->>S: onReset() → IDLE

@@ -1,0 +1,29 @@
+sequenceDiagram
+  participant S as Capteur IoT
+  participant B as Broker MQTT
+  participant MP as MqttEventPublisher
+  participant D as Dashboard
+
+  S->>S: onConnectionLost() → OFFLINE
+  S->>MP: publish(ERROR, state=OFFLINE) → festival/device/{id}/status
+  MP->>D: broadcast — updateDeviceState(OFFLINE)
+
+  Note over S,B: Connexion MQTT perdue
+
+  loop 3 messages perdus
+    S->>B: publish() → timeout
+    S->>S: retryCount++ — message mis en file d'attente
+  end
+
+  Note over S,B: Reconnexion établie
+
+  S->>S: onReconnected() → IDLE
+  S->>MP: publish(ERROR, state=IDLE, retryCount=3) → festival/device/{id}/status
+  MP->>D: broadcast — updateDeviceState(IDLE)
+
+  loop Messages en attente (x3)
+    S->>MP: republier message → festival/venue/{id}/access
+    MP->>D: broadcast via WebSocket
+  end
+
+  D->>D: "All pending messages republished"
