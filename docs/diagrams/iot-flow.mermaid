@@ -1,0 +1,15 @@
+flowchart TD
+  Visitor([Visiteur]) -->|présente billet| Sensor[Capteur IoT\nGATE-EXPO-A1-001]
+  Sensor -->|scan QR/RFID| StateMachine[Machine à États\nDeviceStateMachine]
+  StateMachine -->|onReadSuccess| Validate[ValidateTicketUseCase]
+  Validate -->|findById| TicketRepo[(TicketRepository\nin-memory)]
+  Validate -->|résultat| Capacity[CheckVenueCapacityUseCase]
+  Capacity -->|findById| VenueRepo[(VenueRepository\nin-memory)]
+  Capacity -->|hasCapacity| RecordEntry[RecordEntryUseCase]
+  RecordEntry -->|save| TicketRepo
+  RecordEntry -->|save| VenueRepo
+  RecordEntry -->|publish| MqttPub[MqttEventPublisher]
+  MqttPub -->|MQTT message| Broker[[aedes Broker\nport 1883]]
+  Broker -->|subscribe| Dashboard[Dashboard Web\nport 3000]
+  Broker -->|subscribe| WS[WebSocket\nport 3001]
+  WS -->|broadcast| Browser([Navigateur])

@@ -1,0 +1,9 @@
+export enum DeviceState {
+  IDLE = 'IDLE',
+  READING = 'READING',
+  PROCESSING = 'PROCESSING',
+  GRANTED = 'GRANTED',
+  DENIED = 'DENIED',
+  ERROR = 'ERROR',
+  OFFLINE = 'OFFLINE',
+}

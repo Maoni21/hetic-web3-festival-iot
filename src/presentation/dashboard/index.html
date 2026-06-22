@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Festival IoT — Dashboard</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <header>
+    <div>
+      <h1>Festival International de Photographie</h1>
+      <div class="subtitle">Exposition Cartier-Bresson 2026 · Grand Palais</div>
+    </div>
+    <div class="connection-status">
+      <div class="connection-dot" id="connection-dot"></div>
+      <span id="connection-label">Déconnecté</span>
+    </div>
+  </header>
+
+  <main>
+
+    <!-- Occupancy Card -->
+    <div class="card occupancy-card">
+      <div class="card-title">Affluence en temps réel</div>
+      <div class="occupancy-numbers">
+        <span class="occupancy-current" id="occ-current">—</span>
+        <span class="occupancy-max" id="occ-max">/ —</span>
+        <span class="occupancy-rate" id="occ-rate">—%</span>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill" id="progress-fill" style="width: 0%"></div>
+      </div>
+    </div>
+
+    <!-- Device State Card -->
+    <div class="card">
+      <div class="card-title">État du dispositif</div>
+      <div class="device-badge IDLE" id="device-badge">
+        <div class="device-badge-dot"></div>
+        <span class="badge-text">IDLE</span>
+      </div>
+      <div style="font-size: 0.8125rem; color: var(--color-text-muted); margin-top: 0.5rem;">
+        GATE-EXPO-A1-001 · Firmware 1.4.2
+      </div>
+    </div>
+
+    <!-- Stats Card -->
+    <div class="card">
+      <div class="card-title">Statistiques de session</div>
+      <div class="stats-grid">
+        <div class="stat-item entries">
+          <div class="stat-value" id="stat-entries">0</div>
+          <div class="stat-label">Entrées</div>
+        </div>
+        <div class="stat-item exits">
+          <div class="stat-value" id="stat-exits">0</div>
+          <div class="stat-label">Sorties</div>
+        </div>
+        <div class="stat-item denied">
+          <div class="stat-value" id="stat-denied">0</div>
+          <div class="stat-label">Refus</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Events Feed -->
+    <div class="card events-card">
+      <div class="card-title">Flux d'événements</div>
+      <div class="events-list" id="events-list">
+        <div data-placeholder style="text-align: center; padding: 2rem; color: var(--color-text-muted); font-size: 0.875rem;">
+          En attente d'événements…
+        </div>
+      </div>
+    </div>
+
+    <!-- Simulation Buttons -->
+    <div class="card simulation-card">
+      <div class="card-title">Simulation de scénarios</div>
+      <div class="buttons-grid">
+        <button class="sim-btn" data-scenario="ValidEntry">
+          <span class="btn-icon">✅</span>
+          <span class="btn-label">Entrée valide</span>
+          <span class="btn-desc">Billet TKT-2026-VALID-001</span>
+        </button>
+        <button class="sim-btn" data-scenario="InvalidTicket">
+          <span class="btn-icon">❌</span>
+          <span class="btn-label">Billet invalide</span>
+          <span class="btn-desc">Billet TKT-2026-FAKE-999</span>
+        </button>
+        <button class="sim-btn" data-scenario="AlreadyUsedTicket">
+          <span class="btn-icon">🔁</span>
+          <span class="btn-label">Billet déjà utilisé</span>
+          <span class="btn-desc">Billet TKT-2026-USED-042</span>
+        </button>
+        <button class="sim-btn" data-scenario="DeviceError">
+          <span class="btn-icon">⚠️</span>
+          <span class="btn-label">Erreur de lecture</span>
+          <span class="btn-desc">3 tentatives → ERROR</span>
+        </button>
+        <button class="sim-btn" data-scenario="VenueAtCapacity">
+          <span class="btn-icon">🔴</span>
+          <span class="btn-label">Jauge dépassée</span>
+          <span class="btn-desc">95% warning → 100% exceeded</span>
+        </button>
+        <button class="sim-btn" data-scenario="MessageLoss">
+          <span class="btn-icon">📡</span>
+          <span class="btn-label">Perte de message</span>
+          <span class="btn-desc">OFFLINE → ONLINE → repub</span>
+        </button>
+        <button class="sim-btn sim-btn-all" data-scenario="all">
+          ▶ Lancer tous les scénarios
+        </button>
+      </div>
+    </div>
+
+  </main>
+
+  <script src="dashboard.js"></script>
+</body>
+</html>

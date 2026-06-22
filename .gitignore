@@ -1,0 +1,22 @@
+# Dépendances
+node_modules/
+
+# Build TypeScript
+dist/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Variables d'environnement
+.env
+.env.local
+.env.*.local
+
+# Éditeurs
+.DS_Store
+.vscode/
+.idea/
+
+# Coverage / tests
+coverage/

@@ -1,0 +1,35 @@
+sequenceDiagram
+  participant V as Visiteur
+  participant S as Capteur IoT
+  participant UC as ValidateTicketUseCase
+  participant CV as CheckVenueCapacityUseCase
+  participant RE as RecordEntryUseCase
+  participant TR as TicketRepository
+  participant VR as VenueRepository
+  participant MP as MqttEventPublisher
+  participant B as Broker MQTT
+  participant D as Dashboard
+
+  V->>S: Présente billet TKT-2026-VALID-001
+  S->>S: onTicketDetected() → READING
+  S->>UC: execute("TKT-2026-VALID-001")
+  UC->>TR: findById(ticketId)
+  TR-->>UC: Ticket { status: VALID }
+  UC-->>S: { isValid: true, ticket }
+  S->>S: onReadSuccess() → PROCESSING
+  S->>CV: execute("venue-grand-palais")
+  CV->>VR: findById(venueId)
+  VR-->>CV: Venue { occupancy: 347/500 }
+  CV-->>S: { hasCapacity: true, venue }
+  S->>RE: execute({ ticket, venue, deviceId })
+  RE->>TR: save(ticket.markAsUsed())
+  RE->>VR: save(venue.incrementOccupancy())
+  RE->>MP: publish(AccessEvent ENTRY)
+  MP->>B: MQTT publish festival/venue/venue-grand-palais/access
+  B-->>D: broadcast via WebSocket
+  D->>D: updateOccupancy(348, 500)
+  D->>D: appendEvent(ENTRY)
+  RE-->>S: AccessEvent
+  S->>S: onAccessGranted() → GRANTED
+  Note over S: 3 secondes
+  S->>S: onReset() → IDLE

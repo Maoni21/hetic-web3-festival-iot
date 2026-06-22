@@ -1,0 +1,24 @@
+stateDiagram-v2
+  [*] --> IDLE
+
+  IDLE --> READING : onTicketDetected()
+  IDLE --> OFFLINE : onConnectionLost()
+
+  READING --> PROCESSING : onReadSuccess()
+  READING --> ERROR : onReadFailure()
+  READING --> OFFLINE : onConnectionLost()
+
+  PROCESSING --> GRANTED : onAccessGranted()
+  PROCESSING --> DENIED : onAccessDenied()
+  PROCESSING --> OFFLINE : onConnectionLost()
+
+  GRANTED --> IDLE : onReset() / 3s
+  GRANTED --> OFFLINE : onConnectionLost()
+
+  DENIED --> IDLE : onReset() / 3s
+  DENIED --> OFFLINE : onConnectionLost()
+
+  ERROR --> IDLE : onRecovery() / 5s
+  ERROR --> OFFLINE : onConnectionLost()
+
+  OFFLINE --> IDLE : onReconnected()
